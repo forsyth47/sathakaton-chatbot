@@ -115,8 +115,8 @@ export default function SplashScreen() {
           transition={{ duration: 0.5 }}
           className="mb-8"
         >
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-2">ChatGenius</h1>
-          <p className="text-gray-300 text-lg">Powered by Gemini AI</p>
+          <h1 className="text-4xl md:text-6xl font-bold text-white mb-2">GlitchNet'25</h1>
+          <p className="text-gray-300 text-lg">Enpowering Under Privileged Students</p>
         </motion.div>
 
         <motion.div

@@ -58,7 +58,7 @@ export default function LoginPage() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
-              {isLogin ? "Sign in to continue to ChatGenius" : "Sign up to get started with ChatGenius"}
+              {isLogin ? "Sign in to continue to the ChatBot" : "Sign up to get started with ChatGenius"}
             </motion.p>
           </div>
 
