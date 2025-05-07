@@ -1,66 +1,62 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { streamText } from "ai";
+// app/api/chat/route.ts
+import { NextRequest } from "next/server";
 
-// Create a Google Generative AI instance
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+type Message = {
+  role: "user" | "assistant";
+  content: string;
+};
 
-export async function POST(req: Request) {
-  try {
-    const { messages } = await req.json();
+export async function POST(req: NextRequest) {
+  const { messages } = (await req.json()) as { messages: Message[] };
 
-    // Get the last user message
-    const userMessage = messages[messages.length - 1].content;
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return new Response("Missing GEMINI_API_KEY", { status: 500 });
+  }
 
-    // Get previous messages for context (excluding the last one)
-    const previousMessages = messages.slice(0, -1).map((msg: { role: string; content: any; }) => ({
-      role: msg.role === "user" ? "user" : "model",
-      parts: [{ text: msg.content }],
-    }));
+  const lastMessage = messages[messages.length - 1]?.content;
 
-    // Initialize the Gemini model
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
-    // Start a chat session
-    const chat = model.startChat({
-      history: previousMessages,
-      generationConfig: {
-        maxOutputTokens: 1000,
-      },
-    });
-
-    // Send the message and get a streaming response
-    const result = await chat.sendMessageStream(userMessage);
-
-    // Create a readable stream
-    const stream = new ReadableStream({
-      async start(controller) {
-        const encoder = new TextEncoder();
-
-        // Process the response chunks
-        for await (const chunk of result.stream) {
-          const text = chunk.text();
-          controller.enqueue(encoder.encode(text));
-        }
-
-        controller.close();
-      },
-    });
-
-    // Return a streaming response
-    return new Response(stream, {
-      headers: {
-        "Content-Type": "text/plain; charset=utf-8",
-        "Transfer-Encoding": "chunked",
-      },
-    });
-  } catch (error) {
-    console.error("Error in chat API:", error);
-    return new Response(
-      JSON.stringify({ error: "Failed to process chat request" }),
+  const body = {
+    contents: [
       {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
+        role: "user",
+        parts: [{ text: lastMessage }],
+      },
+    ],
+    model: "gemini-pro",
+  };
+
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response";
+    
+    return new Response(
+      JSON.stringify({
+        message: {
+          role: "assistant" as const,
+          content: text,
+        },
+      }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
       }
     );
+  } catch (error) {
+    console.error("Gemini API error:", error);
+    return new Response(JSON.stringify({ error: "Failed to fetch response" }), {
+      status: 500,
+    });
   }
 }

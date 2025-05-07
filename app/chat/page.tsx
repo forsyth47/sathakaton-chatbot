@@ -20,6 +20,13 @@ export default function ChatPage() {
     api: "/api/chat",
   })
 
+  type TextContentPart = {
+    type: "text";
+    text: string;
+  };
+  
+  type MessageContent = string | TextContentPart[];
+
   // Check if user is logged in
   useEffect(() => {
     const storedUser = localStorage.getItem("user")
@@ -164,14 +171,31 @@ export default function ChatPage() {
               </motion.div>
             </div>
           ) : (
-            messages.map((message, index) => (
-              <MessageBubble
-                key={message.id}
-                content={message.content}
-                role={message.role}
-                isLatest={index === messages.length - 1}
-              />
-            ))
+            messages.map((message, index) => {
+              let content = "";
+            
+              if (typeof message.content === "string") {
+                content = message.content;
+                console.log(content)
+              } else if (Array.isArray(message.content)) {
+                const parts = message.content as Array<{ type?: string; text?: string }>;
+                content = parts
+                  .filter(part => part?.type === "text")
+                  .map(part => part.text ?? "")
+                  .join(" ");
+              }
+              console.log("ReponseContent: ", content)
+              console.log("ReponseRole: ", message.role)
+
+              return (
+                <MessageBubble
+                  key={message.id}
+                  content={content}
+                  role={message.role}
+                  isLatest={index === messages.length - 1}
+                />
+              );
+            })
           )}
           <div ref={messagesEndRef} />
         </div>
