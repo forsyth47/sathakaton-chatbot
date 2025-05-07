@@ -7,7 +7,7 @@ import ReactMarkdown from "react-markdown"
 
 interface MessageBubbleProps {
   content: string
-  role: "user" | "assistant"
+  role: "user" | "assistant" | "system" | "data"
   isLatest: boolean
 }
 
@@ -20,7 +20,15 @@ export default function MessageBubble({ content, role, isLatest }: MessageBubble
     }
   }, [isLatest, content])
 
+  
+  console.log("ROLE IS b4: ", role)
+
+
   const isUser = role === "user"
+
+  
+  console.log("ROLE IS aftr: ", role)
+
 
   return (
     <motion.div
