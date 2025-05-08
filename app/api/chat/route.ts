@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       JSON.stringify({
         message: {
           role: "assistant" as const,
-          content: text,
+          content: text, // Just plain string
         },
       }),
       {

@@ -7,9 +7,8 @@ import SplashScreen from "@/components/splash-screen"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
-  title: "ChatGenius - AI Chat App",
-  description: "Modern AI chat application powered by Gemini",
-    generator: 'v0.dev'
+  title: "Ziny.AI - AI Chat App",
+  description: "Modern AI chat application in collaboration Gemini",
 }
 
 export default function RootLayout({
