@@ -120,7 +120,7 @@ export default function ChatPage() {
             >
               <Menu size={24} />
             </button>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Ziny.AI</h1>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">FAIWA</h1>
           </div>
 
           <div className="flex items-center">
@@ -206,7 +206,7 @@ export default function ChatPage() {
                   <Bot size={32} className="text-blue-600" />
                 </div>
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                  Welcome to Ziny.AI!
+                  Welcome to FAIWA!
                 </h2>
                 <p className="text-gray-600 dark:text-gray-400 max-w-md">
                   Start a conversation with our AI assistant in collaboration with Gemini. Ask questions, get creative responses,
