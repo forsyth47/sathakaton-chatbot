@@ -71,29 +71,36 @@ export default function ChatPage() {
     setInput("");
     setIsSubmitting(true);
   
-    // Optimistically add user message
-    setMessages((prev) => [...prev, { role: "user" as const, content: userMessage }]);
+    const userMsg = { role: "user" as const, content: userMessage };
+    const loadingMsg = { role: "assistant" as const, content: "..." };
+  
+    // Optimistically add both user and loading assistant message
+    setMessages((prev) => [...prev, userMsg, loadingMsg]);
   
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: [...messages, { role: "user", content: userMessage }] }),
+        body: JSON.stringify({ messages: [...messages, userMsg] }),
       });
   
       const data = await res.json();
   
       if (data.message?.content) {
-        setMessages((prev) => [
-          ...prev,
-          { role: "assistant" as const, content: data.message.content },
-        ]);
+        // Replace loading message with real one
+        setMessages((prev) =>
+          prev
+            .slice(0, -1)
+            .concat({ role: "assistant" as const, content: data.message.content })
+        );
       } else {
         throw new Error("No valid response from server");
       }
     } catch (err) {
       console.error(err);
       alert("Failed to get response from AI.");
+      // Remove loading message on error
+      setMessages((prev) => prev.slice(0, -1));
     } finally {
       setIsSubmitting(false);
     }
