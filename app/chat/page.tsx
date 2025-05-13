@@ -25,7 +25,7 @@ export default function ChatPage() {
     type: "text";
     text: string;
   };
-  
+
   type MessageContent = string | TextContentPart[];
 
   // Check if user is logged in
@@ -66,26 +66,26 @@ export default function ChatPage() {
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isSubmitting) return;
-  
+
     const userMessage = input;
     setInput("");
     setIsSubmitting(true);
-  
+
     const userMsg = { role: "user" as const, content: userMessage };
     const loadingMsg = { role: "assistant" as const, content: "..." };
-  
+
     // Optimistically add both user and loading assistant message
     setMessages((prev) => [...prev, userMsg, loadingMsg]);
-  
+
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: [...messages, userMsg] }),
       });
-  
+
       const data = await res.json();
-  
+
       if (data.message?.content) {
         // Replace loading message with real one
         setMessages((prev) =>
@@ -105,9 +105,9 @@ export default function ChatPage() {
       setIsSubmitting(false);
     }
   };
-  
+
   console.log("Messages:", messages)
-  
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col">
       {/* Header */}
@@ -115,13 +115,22 @@ export default function ChatPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center">
             <button
-              onClick={() => setIsSidebarOpen(true)}
-              className="md:hidden mr-2 p-2 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
+                onClick={() => setIsSidebarOpen(true)}
+                className="md:hidden mr-2 p-2 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
             >
-              <Menu size={24} />
+                <Menu size={24} />
             </button>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">FAIWA</h1>
-          </div>
+
+            {/* Image Logo + Text */}
+            <div className="flex items-center">
+                <img
+                src="/images/logo.png"
+                alt="FAIWA Logo"
+                className="w-6 h-6 mr-2"
+                />
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">FAIWA</h1>
+            </div>
+        </div>
 
           <div className="flex items-center">
             <div className="hidden md:flex items-center mr-4">

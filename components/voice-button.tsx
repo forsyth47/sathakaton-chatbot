@@ -1,125 +1,77 @@
-"use client"
+// components/voice-button.tsx
+"use client";
 
-import { useState, useEffect } from "react"
-import { Mic, MicOff } from "lucide-react"
-import { motion } from "framer-motion"
+import { useState } from "react";
+import { Mic, MicOff } from "lucide-react";
 
 interface VoiceButtonProps {
-  onTranscript: (text: string) => void
+  onTranscript: (text: string) => void;
 }
 
 export default function VoiceButton({ onTranscript }: VoiceButtonProps) {
-  const [isListening, setIsListening] = useState(false)
-  const [isSupported, setIsSupported] = useState(true)
-  const [transcript, setTranscript] = useState("")
-
-  useEffect(() => {
-    // Check if SpeechRecognition is supported
-    if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
-      setIsSupported(false)
-    }
-  }, [])
-
-  const toggleListening = () => {
-    if (!isSupported) return
-
-    if (isListening) {
-      stopListening()
-    } else {
-      startListening()
-    }
-  }
+  const [isListening, setIsListening] = useState(false);
 
   const startListening = () => {
-    setIsListening(true)
-    setTranscript("")
+    if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
+      alert("Your browser does not support voice input.");
+      return;
+    }
 
-    // @ts-ignore - TypeScript doesn't know about webkitSpeechRecognition
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-    const recognition = new SpeechRecognition()
+    // @ts-ignore
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    recognition.continuous = true
-    recognition.interimResults = true
-    recognition.lang = "en-US"
+    const recognition = new SpeechRecognition();
+
+    recognition.lang = "en-US";
+    recognition.continuous = false; // Only one utterance
+    recognition.interimResults = false; // No interim results
 
     recognition.onresult = (event: any) => {
-      let interimTranscript = ""
-      let finalTranscript = ""
-
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript
-        if (event.results[i].isFinal) {
-          finalTranscript += transcript
-        } else {
-          interimTranscript += transcript
-        }
-      }
-
-      setTranscript(finalTranscript || interimTranscript)
-    }
+      const transcript = event.results[0][0].transcript;
+      onTranscript(transcript);
+    };
 
     recognition.onerror = (event: any) => {
-      console.error("Speech recognition error", event.error)
-      setIsListening(false)
-    }
+      console.error("Speech recognition error:", event.error);
+    };
 
     recognition.onend = () => {
-      setIsListening(false)
-      if (transcript) {
-        onTranscript(transcript)
-      }
-    }
+      setIsListening(false); // Always stop UI state after recognition ends
+    };
 
-    recognition.start()
-
-    // Store recognition instance to stop it later
-    // @ts-ignore
-    window.recognitionInstance = recognition
-  }
+    recognition.start();
+    setIsListening(true);
+  };
 
   const stopListening = () => {
-    setIsListening(false)
     // @ts-ignore
     if (window.recognitionInstance) {
       // @ts-ignore
-      window.recognitionInstance.stop()
+      window.recognitionInstance.stop();
     }
+    setIsListening(false);
+  };
 
-    if (transcript) {
-      onTranscript(transcript)
+  const toggleListening = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
     }
-  }
-
-  if (!isSupported) {
-    return (
-      <button
-        className="p-3 bg-gray-200 text-gray-500 rounded-full opacity-50 cursor-not-allowed"
-        disabled
-        title="Voice input not supported in this browser"
-      >
-        <MicOff size={20} />
-      </button>
-    )
-  }
+  };
 
   return (
-    <motion.button
-      className={`p-3 rounded-full ${
-        isListening ? "bg-red-500 text-white" : "bg-blue-500 text-white hover:bg-blue-600"
-      }`}
+    <button
+      type="button"
       onClick={toggleListening}
-      whileTap={{ scale: 0.9 }}
-      whileHover={{ scale: 1.1 }}
+      className={`p-3 rounded-full ${
+        isListening
+          ? "bg-red-500 text-white"
+          : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
+      } hover:opacity-90 transition-opacity`}
       title={isListening ? "Stop recording" : "Start voice input"}
     >
-      {isListening ? (
-        <div className="relative">
-          <Mic size={20} />
-          <span className="absolute -top-1 -right-1 w-2 h-2 bg-white rounded-full animate-ping"></span>
-        </div>
-      ) : (
-        <Mic size={20} />
-      )}
-    </motion.button>
-  )
+      {isListening ? <MicOff size={20} /> : <Mic size={20} />}
+    </button>
+  );
 }
